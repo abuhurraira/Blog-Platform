@@ -1,0 +1,74 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: blog_db
+    environment:
+      POSTGRES_DB: blogdb
+      POSTGRES_USER: bloguser
+      POSTGRES_PASSWORD: blogpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - blog_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bloguser -d blogdb"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Flask Backend
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: blog_backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://bloguser:blogpass@db:5432/blogdb
+      JWT_SECRET_KEY: your-super-secret-jwt-key-change-this-in-production
+      FLASK_ENV: production
+      FLASK_DEBUG: false
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - blog_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: blog_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - blog_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  blog_network:
+    driver: bridge
