@@ -1,16 +1,38 @@
 import pytest
-from app import create_app
-from extensions import db
+from flask import Flask, jsonify
+from flask_cors import CORS
+from extensions import db, jwt
 from models.user import User
 
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
-    app = create_app()
+    app = Flask(__name__)
     app.config['TESTING'] = True
-    app.config['DATABASE_URL'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['JWT_SECRET_KEY'] = 'test-secret-key'
+    
+    # Initialize extensions
+    db.init_app(app)
+    jwt.init_app(app)
+    CORS(app)
+    
+    # Register blueprints
+    from routes.auth import auth_bp
+    from routes.blogs import blogs_bp
+    
+    app.register_blueprint(auth_bp, url_prefix='/api')
+    app.register_blueprint(blogs_bp, url_prefix='/api')
+    
+    # Health check endpoint
+    @app.route('/api/health')
+    def health_check():
+        return jsonify({'status': 'healthy', 'message': 'Blog API is running'}), 200
     
     with app.app_context():
+        # Import models to ensure they are registered
+        from models.user import User
+        from models.blog import Blog
         db.create_all()
         yield app
         db.drop_all()

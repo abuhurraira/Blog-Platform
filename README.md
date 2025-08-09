@@ -49,6 +49,7 @@ A modern, full-stack blog platform built with React, Flask, and PostgreSQL. This
 - **Flask-Swagger-UI**: Interactive API documentation
 - **Marshmallow**: Data serialization and validation
 - **bcrypt**: Password hashing
+- **pytest**: Testing framework with comprehensive test suite
 
 ### Database
 - **PostgreSQL**: Robust relational database
@@ -75,9 +76,13 @@ Blog-Platform/
 │   ├── models/             # Database models
 │   ├── routes/             # API route handlers
 │   ├── schemas/            # Data validation schemas
+│   ├── tests/              # Comprehensive test suite
+│   │   ├── test_auth.py   # Authentication tests
+│   │   └── test_blogs.py  # Blog management tests
 │   ├── app.py             # Flask application factory
 │   ├── config.py          # Application configuration
 │   ├── requirements.txt   # Python dependencies
+│   ├── pytest.ini         # Test configuration
 │   └── Dockerfile         # Backend container configuration
 ├── docker-compose.yml      # Multi-container orchestration
 ├── init.sql               # Database initialization
@@ -205,6 +210,172 @@ Blog-Platform/
 ### System
 - `GET /api/health` - Health check endpoint
 
+## 🧪 Testing Framework
+
+The blog platform includes a comprehensive testing framework to ensure code quality and reliability.
+
+### Test Structure
+
+```
+backend/tests/
+├── __init__.py           # Test package initialization
+├── test_auth.py         # Authentication endpoint tests
+└── test_blogs.py        # Blog management endpoint tests
+```
+
+### Test Coverage
+
+#### 🔐 Authentication Tests (`test_auth.py`)
+- ✅ **User Registration**: Success and duplicate email handling
+- ✅ **User Login**: Success and invalid credentials
+- ✅ **Protected Routes**: With and without JWT tokens
+- ✅ **JWT Token Validation**: Token-based authentication
+
+#### 📝 Blog Management Tests (`test_blogs.py`)
+- ✅ **Blog Creation**: Success, unauthorized, and invalid data
+- ✅ **Blog Retrieval**: All blogs, specific blog, and nonexistent blog
+- ✅ **Blog Updates**: Success and unauthorized access
+- ✅ **Blog Deletion**: Success and verification
+- ✅ **User's Own Blogs**: Personal blog management
+
+### Running Tests
+
+#### Prerequisites
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+#### Basic Test Commands
+```bash
+# Run all tests with verbose output
+pytest tests/ -v
+
+# Run all tests with short traceback
+pytest tests/ -v --tb=short
+
+# Run specific test file
+pytest tests/test_auth.py -v
+
+# Run specific test class
+pytest tests/test_auth.py::TestAuthentication -v
+
+# Run specific test method
+pytest tests/test_auth.py::TestAuthentication::test_user_registration_success -v
+```
+
+#### Test Coverage (Optional)
+```bash
+# Run with coverage report
+pytest tests/ --cov=app --cov-report=term-missing
+
+# Generate HTML coverage report
+pytest tests/ --cov=app --cov-report=html
+```
+
+#### Test Discovery
+```bash
+# List all available tests
+pytest tests/ --collect-only
+
+# Run tests and show what was collected
+pytest tests/ -v --tb=no
+```
+
+### Test Features
+
+#### ✅ Isolated Testing Environment
+- **In-memory SQLite database** for each test
+- **Clean state** between tests
+- **No external dependencies** required
+- **Fast execution** - tests run in seconds
+
+#### ✅ Professional Test Structure
+- **Test fixtures** for common setup
+- **Descriptive test names** and docstrings
+- **Comprehensive assertions** and validations
+- **Error case coverage** and edge cases
+
+#### ✅ Real-World Scenarios
+- **Happy path** testing (successful operations)
+- **Error handling** (invalid data, unauthorized access)
+- **Authentication flows** (login, token validation)
+- **Data validation** (required fields, format checking)
+
+### Example Test Output
+
+```bash
+$ pytest tests/ -v
+============================= test session starts ==============================
+platform win32 -- Python 3.13.2, pytest-7.4.3, pluggy-1.6.0
+collected 16 tests
+
+tests/test_auth.py::TestAuthentication::test_user_registration_success PASSED
+tests/test_auth.py::TestAuthentication::test_user_registration_duplicate_email PASSED
+tests/test_auth.py::TestAuthentication::test_user_login_success PASSED
+tests/test_auth.py::TestAuthentication::test_user_login_invalid_credentials PASSED
+tests/test_auth.py::TestAuthentication::test_protected_route_without_token PASSED
+tests/test_auth.py::TestAuthentication::test_protected_route_with_token PASSED
+tests/test_blogs.py::TestBlogManagement::test_create_blog_success PASSED
+tests/test_blogs.py::TestBlogManagement::test_create_blog_without_auth PASSED
+tests/test_blogs.py::TestBlogManagement::test_create_blog_invalid_data PASSED
+tests/test_blogs.py::TestBlogManagement::test_get_all_blogs PASSED
+tests/test_blogs.py::TestBlogManagement::test_get_blog_by_id PASSED
+tests/test_blogs.py::TestBlogManagement::test_get_nonexistent_blog PASSED
+tests/test_blogs.py::TestBlogManagement::test_update_blog_success PASSED
+tests/test_blogs.py::TestBlogManagement::test_update_blog_unauthorized PASSED
+tests/test_blogs.py::TestBlogManagement::test_delete_blog_success PASSED
+tests/test_blogs.py::TestBlogManagement::test_get_user_blogs PASSED
+
+============================== 16 passed in 6.32s ==============================
+```
+
+### Why SQLite for Testing?
+
+While the production environment uses PostgreSQL, tests use **in-memory SQLite** for:
+
+- **🚀 Speed**: Tests run much faster with in-memory database
+- **🧹 Isolation**: Each test gets a completely fresh database
+- **🛠️ Simplicity**: No external database setup required
+- **🎯 Focus**: Tests focus on application logic, not database connectivity
+- **📦 Portability**: Tests work on any machine without database installation
+
+### Test Configuration
+
+The testing framework is configured via `backend/pytest.ini`:
+
+```ini
+[tool:pytest]
+testpaths = tests
+python_files = test_*.py
+python_classes = Test*
+python_functions = test_*
+addopts = 
+    -v
+    --cov=app
+    --cov-report=term-missing
+    --cov-report=html
+    --cov-report=xml
+    --tb=short
+```
+
+### Benefits
+
+#### ✅ Code Quality Assurance
+- **Catch bugs early** before they reach production
+- **Ensure functionality** works as expected
+- **Prevent regressions** when making changes
+
+#### ✅ Development Confidence
+- **Safe refactoring** with test safety net
+- **Fearless code changes** knowing tests will catch issues
+- **Better code design** through testability
+
+#### ✅ Professional Development
+- **Industry-standard testing** practices
+- **Comprehensive coverage** of your API endpoints
+- **Documentation through tests** showing how code should work
+
 ## 🔒 Environment Variables
 
 Create a `.env` file in the backend directory with the following variables:
@@ -311,6 +482,14 @@ curl -X POST http://localhost:5000/api/blogs \
 - Real-time preview and editing
 - Personal blog dashboard
 
+### Comprehensive Testing Framework
+- **16 comprehensive test cases** covering all major functionality
+- **Authentication testing** - registration, login, and JWT validation
+- **Blog management testing** - CRUD operations and authorization
+- **Isolated test environment** with in-memory SQLite database
+- **Fast test execution** - complete test suite runs in under 10 seconds
+- **Professional test structure** with fixtures and comprehensive assertions
+
 ### Responsive Design
 - Mobile-first responsive layout
 - Beautiful typography with Inter font
@@ -328,8 +507,10 @@ curl -X POST http://localhost:5000/api/blogs \
 The application automatically creates database tables on startup. For production, consider using Flask-Migrate for proper database versioning.
 
 ### Testing
-- Backend: Add tests using pytest
-- Frontend: Add tests using Jest and React Testing Library
+- **Backend**: Comprehensive test suite using pytest with 16 test cases
+- **Frontend**: Add tests using Jest and React Testing Library
+- **Test Coverage**: Authentication, blog management, and API endpoints
+- **Test Database**: In-memory SQLite for fast, isolated testing
 
 ## 🚀 Production Deployment
 
