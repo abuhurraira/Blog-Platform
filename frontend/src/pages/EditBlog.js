@@ -1,8 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 import { useGetBlogQuery, useUpdateBlogMutation } from '../store/apiSlice';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
+
+const EditBlogSchema = Yup.object().shape({
+  title: Yup.string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(200, 'Title must be less than 200 characters')
+    .required('Title is required'),
+  content: Yup.string()
+    .min(10, 'Content must be at least 10 characters')
+    .required('Content is required'),
+});
 
 const EditBlog = () => {
   const { id } = useParams();
@@ -10,11 +22,6 @@ const EditBlog = () => {
   const { user } = useAuth();
   const { data: blog, error: fetchError, isLoading: fetchLoading } = useGetBlogQuery(id);
   const [updateBlog, { isLoading: updateLoading, error: updateError }] = useUpdateBlogMutation();
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-  });
 
   useEffect(() => {
     if (blog?.blog) {
@@ -25,29 +32,17 @@ const EditBlog = () => {
         navigate('/');
         return;
       }
-      
-      setFormData({
-        title: blogData.title,
-        content: blogData.content,
-      });
     }
   }, [blog, user, navigate]);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      await updateBlog({ id, ...formData }).unwrap();
+      await updateBlog({ id, ...values }).unwrap();
       navigate(`/blog/${id}`);
     } catch (err) {
       console.error('Failed to update blog:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -69,6 +64,15 @@ const EditBlog = () => {
     );
   }
 
+  if (!blog?.blog) {
+    return null;
+  }
+
+  const initialValues = {
+    title: blog.blog.title,
+    content: blog.blog.content,
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-0">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
@@ -83,56 +87,82 @@ const EditBlog = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              required
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Enter your blog title..."
-            />
-          </div>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={EditBlogSchema}
+          onSubmit={handleSubmit}
+          enableReinitialize
+          validateOnBlur={true}
+          validateOnChange={true}
+        >
+          {({ isSubmitting, touched, errors, handleBlur }) => (
+            <Form className="space-y-6">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                  Title
+                </label>
+                <Field
+                  type="text"
+                  id="title"
+                  name="title"
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                    touched.title && errors.title 
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                      : 'border-gray-300'
+                  }`}
+                  placeholder="Enter your blog title..."
+                />
+                {touched.title && errors.title && (
+                  <div className="text-red-600 text-xs mt-1">
+                    {errors.title}
+                  </div>
+                )}
+              </div>
 
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-              Content
-            </label>
-            <textarea
-              id="content"
-              name="content"
-              required
-              rows={15}
-              value={formData.content}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Write your blog content here..."
-            />
-          </div>
+              <div>
+                <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                  Content
+                </label>
+                <Field
+                  as="textarea"
+                  id="content"
+                  name="content"
+                  rows={15}
+                  onBlur={handleBlur}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                    touched.content && errors.content 
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                      : 'border-gray-300'
+                  }`}
+                  placeholder="Write your blog content here..."
+                />
+                {touched.content && errors.content && (
+                  <div className="text-red-600 text-xs mt-1">
+                    {errors.content}
+                  </div>
+                )}
+              </div>
 
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => navigate(`/blog/${id}`)}
-              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={updateLoading || !formData.title.trim() || !formData.content.trim()}
-              className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {updateLoading ? <LoadingSpinner size="sm" /> : 'Update Blog'}
-            </button>
-          </div>
-        </form>
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/blog/${id}`)}
+                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || updateLoading}
+                  className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {updateLoading ? <LoadingSpinner size="sm" /> : 'Update Blog'}
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );

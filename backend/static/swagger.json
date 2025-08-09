@@ -1,0 +1,845 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Blog Platform API",
+    "description": "A comprehensive API for a modern blog platform with user authentication and blog management",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Blog Platform Team",
+      "email": "support@blogplatform.com"
+    }
+  },
+  "host": "localhost:5000",
+  "basePath": "/api",
+  "schemes": ["http", "https"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints"
+    },
+    {
+      "name": "Blogs",
+      "description": "Blog post management endpoints"
+    },
+    {
+      "name": "System",
+      "description": "System health and utility endpoints"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health Check",
+        "description": "Check if the API is running and healthy",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "example": "healthy"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Blog API is running"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/signup": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User Registration",
+        "description": "Register a new user account",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["username", "email", "password"],
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 80,
+                  "example": "johndoe"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "example": "john@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "minLength": 6,
+                  "example": "securepassword123"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User created successfully"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "john@example.com"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or user already exists",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Email already registered"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User Login",
+        "description": "Authenticate user and return JWT token",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["email", "password"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "example": "john@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "securepassword123"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Login successful"
+                },
+                "access_token": {
+                  "type": "string",
+                  "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "john@example.com"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Invalid email or password"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/profile": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get User Profile",
+        "description": "Get current user's profile information",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "email": {
+                      "type": "string",
+                      "example": "john@example.com"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/blogs": {
+      "get": {
+        "tags": ["Blogs"],
+        "summary": "Get All Blogs",
+        "description": "Retrieve a paginated list of all public blog posts",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "default": 1,
+            "description": "Page number for pagination"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "type": "integer",
+            "default": 10,
+            "description": "Number of blogs per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blogs retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "blogs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "example": "My First Blog Post"
+                      },
+                      "content": {
+                        "type": "string",
+                        "example": "This is the content of my first blog post..."
+                      },
+                      "author": {
+                        "type": "string",
+                        "example": "johndoe"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T12:00:00"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T12:00:00"
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "per_page": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "total": {
+                      "type": "integer",
+                      "example": 25
+                    },
+                    "pages": {
+                      "type": "integer",
+                      "example": 3
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Blogs"],
+        "summary": "Create Blog Post",
+        "description": "Create a new blog post (requires authentication)",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["title", "content"],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 200,
+                  "example": "My Amazing Blog Post"
+                },
+                "content": {
+                  "type": "string",
+                  "minLength": 10,
+                  "example": "This is the content of my amazing blog post..."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Blog post created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Blog post created successfully"
+                },
+                "blog": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "My Amazing Blog Post"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "This is the content of my amazing blog post..."
+                    },
+                    "author": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/blogs/{id}": {
+      "get": {
+        "tags": ["Blogs"],
+        "summary": "Get Blog by ID",
+        "description": "Retrieve a specific blog post by its ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Blog post ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blog post retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "blog": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "My Amazing Blog Post"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "This is the content of my amazing blog post..."
+                    },
+                    "author": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Blog post not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Blogs"],
+        "summary": "Update Blog Post",
+        "description": "Update an existing blog post (requires authentication and ownership)",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Blog post ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["title", "content"],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 200,
+                  "example": "Updated Blog Post Title"
+                },
+                "content": {
+                  "type": "string",
+                  "minLength": 10,
+                  "example": "This is the updated content of my blog post..."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blog post updated successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Blog post updated successfully"
+                },
+                "blog": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "example": "Updated Blog Post Title"
+                    },
+                    "content": {
+                      "type": "string",
+                      "example": "This is the updated content of my blog post..."
+                    },
+                    "author": {
+                      "type": "string",
+                      "example": "johndoe"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-01T12:00:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "403": {
+            "description": "Forbidden - User does not own this blog post"
+          },
+          "404": {
+            "description": "Blog post not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Blogs"],
+        "summary": "Delete Blog Post",
+        "description": "Delete a blog post (requires authentication and ownership)",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Blog post ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blog post deleted successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Blog post deleted successfully"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "403": {
+            "description": "Forbidden - User does not own this blog post"
+          },
+          "404": {
+            "description": "Blog post not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/my-blogs": {
+      "get": {
+        "tags": ["Blogs"],
+        "summary": "Get User's Blogs",
+        "description": "Retrieve all blog posts created by the authenticated user",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "default": 1,
+            "description": "Page number for pagination"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "type": "integer",
+            "default": 10,
+            "description": "Number of blogs per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User's blogs retrieved successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "blogs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "example": "My First Blog Post"
+                      },
+                      "content": {
+                        "type": "string",
+                        "example": "This is the content of my first blog post..."
+                      },
+                      "author": {
+                        "type": "string",
+                        "example": "johndoe"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T12:00:00"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-01-01T12:00:00"
+                      }
+                    }
+                  }
+                },
+                "pagination": {
+                  "type": "object",
+                  "properties": {
+                    "page": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "per_page": {
+                      "type": "integer",
+                      "example": 10
+                    },
+                    "total": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "pages": {
+                      "type": "integer",
+                      "example": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing token"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "User ID"
+        },
+        "username": {
+          "type": "string",
+          "description": "Username"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account creation date"
+        }
+      }
+    },
+    "Blog": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Blog post ID"
+        },
+        "title": {
+          "type": "string",
+          "description": "Blog post title"
+        },
+        "content": {
+          "type": "string",
+          "description": "Blog post content"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author username"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation date"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update date"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "description": "Error message"
+        }
+      }
+    }
+  }
+}

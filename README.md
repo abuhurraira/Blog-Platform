@@ -20,12 +20,14 @@ A modern, full-stack blog platform built with React, Flask, and PostgreSQL. This
 - **Password Hashing**: Secure password storage using bcrypt
 - **JWT Authentication**: Stateless authentication with access tokens
 - **Input Validation**: Server-side validation using Marshmallow
+- **Form Validation**: Client-side validation using Formik and Yup
 - **CORS Support**: Proper cross-origin resource sharing configuration
 
 ### Modern UI/UX
 - **Responsive Design**: Mobile-first design with Tailwind CSS
 - **Loading States**: Smooth loading indicators throughout the app
 - **Error Handling**: User-friendly error messages and validation
+- **Form Validation**: Real-time validation with visual feedback
 - **Clean Interface**: Modern, professional design with excellent UX
 
 ## 🛠 Tech Stack
@@ -34,6 +36,8 @@ A modern, full-stack blog platform built with React, Flask, and PostgreSQL. This
 - **React 18**: Modern React with hooks and functional components
 - **Redux Toolkit**: State management with RTK Query for API calls
 - **React Router**: Client-side routing
+- **Formik**: Form management and validation
+- **Yup**: Schema validation for forms
 - **Tailwind CSS**: Utility-first CSS framework
 - **Nginx**: Production web server
 
@@ -42,6 +46,7 @@ A modern, full-stack blog platform built with React, Flask, and PostgreSQL. This
 - **Flask-JWT-Extended**: JWT authentication
 - **Flask-SQLAlchemy**: ORM for database operations
 - **Flask-CORS**: Cross-origin resource sharing
+- **Flask-Swagger-UI**: Interactive API documentation
 - **Marshmallow**: Data serialization and validation
 - **bcrypt**: Password hashing
 
@@ -158,7 +163,34 @@ Blog-Platform/
    npm start
    ```
 
+## 📸 Screenshots
+
+### Swagger UI - Interactive API Documentation
+
+#### **1. API Overview**
+![Swagger UI Overview](screenshots/1.jpg)
+*Main Swagger UI interface showing all API endpoint categories: Authentication, Blogs, and System*
+
+#### **2. Authentication Endpoints**
+![Swagger Authentication](screenshots/2.jpg)
+*Authentication endpoints with JWT Bearer token support - User registration, login, and profile management*
+
+#### **3. Blog Management Endpoints**
+![Swagger Blog Management](screenshots/3.jpg)
+*Complete blog management endpoints with CRUD operations - Create, read, update, and delete blog posts*
+
+#### **4. Interactive Testing Interface**
+![Swagger Testing](screenshots/4.jpg)
+*Interactive testing interface showing request/response examples and curl commands*
+
+#### **5. API Response Example**
+![Swagger Response](screenshots/6.jpg)
+*Real API response showing successful user creation with proper HTTP status codes and headers*
+
 ## 🔌 API Endpoints
+
+### Interactive API Documentation
+- **Swagger UI**: http://localhost:5000/api/docs - Interactive API documentation with testing capabilities
 
 ### Authentication
 - `POST /api/signup` - User registration
@@ -219,7 +251,12 @@ docker-compose down
 docker-compose down -v
 ```
 
+
+
 ## 🧪 Usage Examples
+
+### Interactive API Testing
+**Visit**: http://localhost:5000/api/docs to test all API endpoints interactively with Swagger UI.
 
 ### User Registration
 ```bash
@@ -255,15 +292,25 @@ curl -X POST http://localhost:5000/api/blogs \
 
 ## 🎨 Features Showcase
 
+### Form Validation with Formik
+- **Real-time Validation**: Instant feedback as users type
+- **Schema Validation**: Yup schemas for consistent validation rules
+- **Visual Feedback**: Red borders and error messages for invalid fields
+- **Form State Management**: Automatic form state handling
+- **Error Handling**: Comprehensive error display and recovery
+- **Accessibility**: Proper ARIA labels and screen reader support
+
 ### Authentication Flow
-- Clean, modern login and signup forms
+- Clean, modern login and signup forms with Formik validation
+- Real-time form validation with visual feedback
 - Automatic redirect after authentication
 - Persistent sessions with JWT tokens
 - Secure logout functionality
 
 ### Blog Management
-- Intuitive blog creation interface
+- Intuitive blog creation interface with Formik validation
 - Rich text editing capabilities
+- Real-time form validation and error handling
 - Real-time preview and editing
 - Personal blog dashboard
 

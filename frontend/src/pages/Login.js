@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 import { useLoginMutation } from '../store/apiSlice';
 import { setCredentials } from '../store/authSlice';
 import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+});
+
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [login, { isLoading, error }] = useLoginMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -23,16 +32,15 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate, from]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      const result = await login({ email, password }).unwrap();
+      const result = await login(values).unwrap();
       dispatch(setCredentials(result));
       navigate(from, { replace: true });
     } catch (err) {
-      // Error is handled by RTK Query
       console.error('Login failed:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -53,57 +61,84 @@ const Login = () => {
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-              {error?.data?.error || 'Login failed. Please try again.'}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
-          </div>
+        
+        <Formik
+          initialValues={{ email: '', password: '' }}
+          validationSchema={LoginSchema}
+          onSubmit={handleSubmit}
+          validateOnBlur={true}
+          validateOnChange={true}
+        >
+          {({ isSubmitting, touched, errors, handleBlur }) => (
+            <Form className="mt-8 space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+                  {error?.data?.error || 'Login failed. Please try again.'}
+                </div>
+              )}
+              
+              <div className="rounded-md shadow-sm -space-y-px">
+                <div>
+                  <label htmlFor="email" className="sr-only">
+                    Email address
+                  </label>
+                  <Field
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    onBlur={handleBlur}
+                    className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm ${
+                      touched.email && errors.email 
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300'
+                    }`}
+                    placeholder="Email address"
+                  />
+                  {touched.email && errors.email && (
+                    <div className="text-red-600 text-xs mt-1 px-3">
+                      {errors.email}
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <label htmlFor="password" className="sr-only">
+                    Password
+                  </label>
+                  <Field
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    onBlur={handleBlur}
+                    className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm ${
+                      touched.password && errors.password 
+                        ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                        : 'border-gray-300'
+                    }`}
+                    placeholder="Password"
+                  />
+                  {touched.password && errors.password && (
+                    <div className="text-red-600 text-xs mt-1 px-3">
+                      {errors.password}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? <LoadingSpinner size="sm" /> : 'Sign in'}
-            </button>
-          </div>
-        </form>
+              <div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isLoading}
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? <LoadingSpinner size="sm" /> : 'Sign in'}
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );
