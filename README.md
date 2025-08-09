@@ -179,11 +179,8 @@ Blog-Platform/
 ![Swagger Blog Management](screenshots/3.jpg)
 *Complete blog management endpoints with CRUD operations - Create, read, update, and delete blog posts*
 
-#### **4. Interactive Testing Interface**
-![Swagger Testing](screenshots/4.jpg)
-*Interactive testing interface showing request/response examples and curl commands*
 
-#### **5. API Response Example**
+#### **4. API Response Example**
 ![Swagger Response](screenshots/6.jpg)
 *Real API response showing successful user creation with proper HTTP status codes and headers*
 
