@@ -4,18 +4,18 @@ services:
     image: postgres:15-alpine
     container_name: blog_db
     environment:
-      POSTGRES_DB: blogdb
-      POSTGRES_USER: bloguser
-      POSTGRES_PASSWORD: blogpass
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     networks:
       - blog_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bloguser -d blogdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -27,12 +27,17 @@ services:
       dockerfile: Dockerfile
     container_name: blog_backend
     environment:
-      DATABASE_URL: postgresql+psycopg://bloguser:blogpass@db:5432/blogdb
-      JWT_SECRET_KEY: your-super-secret-jwt-key-change-this-in-production
-      FLASK_ENV: production
-      FLASK_DEBUG: false
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      FLASK_ENV: ${FLASK_ENV}
+      FLASK_DEBUG: ${FLASK_DEBUG}
+      SECRET_KEY: ${SECRET_KEY}
+      HOST: ${HOST}
+      PORT: ${PORT}
+      JWT_ACCESS_TOKEN_EXPIRES: ${JWT_ACCESS_TOKEN_EXPIRES}
+      JWT_REFRESH_TOKEN_EXPIRES: ${JWT_REFRESH_TOKEN_EXPIRES}
     ports:
-      - "5000:5000"
+      - "${PORT}:5000"
     depends_on:
       db:
         condition: service_healthy
@@ -50,6 +55,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL}
+        REACT_APP_BASE_URL: ${REACT_APP_BASE_URL}
+        REACT_APP_NAME: ${REACT_APP_NAME:-Blog Platform}
     container_name: blog_frontend
     ports:
       - "3000:80"

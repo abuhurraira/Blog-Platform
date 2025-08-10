@@ -1,6 +1,11 @@
 # Build stage
 FROM node:18-alpine as build
 
+# Accept build arguments
+ARG REACT_APP_API_URL
+ARG REACT_APP_BASE_URL
+ARG REACT_APP_NAME
+
 WORKDIR /app
 
 # Copy package files
@@ -12,7 +17,7 @@ RUN npm ci --omit=dev
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application with environment variables
 RUN npm run build
 
 # Production stage
