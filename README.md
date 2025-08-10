@@ -131,6 +131,16 @@ pytest tests/ -v
 ### Environment Setup
 Create `.env` file in the project root from `env.example` template. All services (PostgreSQL, Flask, React) use this unified configuration.
 
+#### Environment Variables
+The project includes a comprehensive `env.example` file with all necessary configuration:
+
+- **Database**: PostgreSQL connection settings and credentials
+- **Backend**: Flask server configuration, JWT secrets, and security keys
+- **Frontend**: React app settings and API endpoints
+- **Security**: CORS origins and cross-origin settings
+
+**Important**: Copy `env.example` to `.env` and update the values according to your environment. Never commit the actual `.env` file to version control.
+
 ### Docker Commands
 ```bash
 docker-compose up --build    # Build and start all services
@@ -175,9 +185,9 @@ npm start
 - **Connection Pooling**: Optimize database connections
 - **Monitoring**: Track database performance metrics
 
-## 📸 Screenshots
+## 📸 Swagger API Endpoints
 
-### Swagger UI - Interactive API Documentation
+### Interactive API Documentation
 
 #### **1. API Overview**
 ![Swagger UI Overview](screenshots/1.jpg)
